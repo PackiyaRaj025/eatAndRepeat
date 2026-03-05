@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eat & Repeat – Today's Special</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Righteous&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #FF5722;
+  --amber: #FFC107;
+  --deep: #1a0a00;
+  --green: #27ae60;
+  --blue: #2980b9;
+  --text: #2c1a0e;
+  --muted: #8B6A55;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Nunito', sans-serif; background: #1a0a00; color: var(--text); overflow-x: hidden; }
+
+/* WELCOME */
+#welcome-screen {
+  position: fixed; inset: 0;
+  background: linear-gradient(145deg, #1a0a00 0%, #3d1c00 50%, #FF5722 100%);
+  z-index: 1000; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; padding: 24px;
+  animation: welcomeExit 0.8s ease-in 3.2s forwards;
+}
+@keyframes welcomeExit { to { opacity: 0; pointer-events: none; transform: scale(1.05); } }
+.welcome-emoji { font-size: 4rem; animation: bounceIn 0.6s cubic-bezier(.22,1.4,.36,1) 0.2s both; }
+.welcome-title { font-family:'Righteous',cursive; font-size:clamp(2.2rem,7vw,3.8rem); color:#fff; text-shadow:0 4px 20px rgba(255,87,34,0.6); animation:slideUp 0.7s cubic-bezier(.22,1.4,.36,1) 0.4s both; line-height:1.1; margin:12px 0 8px; }
+.welcome-sub { font-size:1rem; color:rgba(255,255,255,0.75); font-weight:600; letter-spacing:3px; text-transform:uppercase; animation:slideUp 0.7s cubic-bezier(.22,1.4,.36,1) 0.6s both; }
+.welcome-tagline { margin-top:18px; font-size:1.1rem; color:var(--amber); font-weight:700; animation:slideUp 0.7s cubic-bezier(.22,1.4,.36,1) 0.8s both; }
+.welcome-dots { display:flex; gap:8px; margin-top:32px; animation:slideUp 0.7s ease 1.2s both; }
+.welcome-dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); animation:pulse 1s ease-in-out infinite; }
+.welcome-dot:nth-child(2){animation-delay:0.2s;} .welcome-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes bounceIn { from{opacity:0;transform:scale(0.3) rotate(-20deg);} to{opacity:1;transform:scale(1) rotate(0deg);} }
+@keyframes slideUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+@keyframes pulse { 0%,100%{background:rgba(255,255,255,0.3);transform:scale(1);} 50%{background:var(--amber);transform:scale(1.3);} }
+
+/* MAIN PAGE */
+#main-page { opacity:0; animation:fadeIn 0.8s ease 4.0s forwards; }
+@keyframes fadeIn { to { opacity:1; } }
+
+/* OVERLAY PAGES */
+.game-overlay { display:none; position:fixed; inset:0; z-index:500; overflow-y:auto; }
+.game-overlay.active { display:block; animation:overlayIn 0.4s cubic-bezier(.22,1.4,.36,1); }
+@keyframes overlayIn { from{opacity:0;transform:translateY(40px);} to{opacity:1;transform:translateY(0);} }
+.overlay-inner { min-height:100vh; }
+.overlay-header { padding:24px 20px 54px; position:relative; }
+.overlay-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:32px; border-radius:50% 50% 0 0 / 100% 100% 0 0; }
+#free-game-overlay { background:#f0fdf6; }
+#free-game-overlay .overlay-header { background:linear-gradient(135deg,#1a6e3b,#27ae60); }
+#free-game-overlay .overlay-header::after { background:#f0fdf6; }
+#paid-game-overlay { background:#eaf4fb; }
+#paid-game-overlay .overlay-header { background:linear-gradient(135deg,#1a3a5c,#2980b9); }
+#paid-game-overlay .overlay-header::after { background:#eaf4fb; }
+.overlay-back { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); color:#fff; font-family:'Nunito',sans-serif; font-size:0.85rem; font-weight:800; padding:8px 16px; border-radius:50px; cursor:pointer; margin-bottom:20px; transition:background 0.2s; }
+.overlay-back:hover { background:rgba(255,255,255,0.35); }
+.overlay-title { font-family:'Righteous',cursive; font-size:clamp(1.8rem,6vw,2.6rem); color:#fff; text-shadow:0 3px 12px rgba(0,0,0,0.2); line-height:1.1; }
+.overlay-sub { color:rgba(255,255,255,0.85); font-size:0.9rem; font-weight:700; margin-top:6px; }
+.overlay-content { max-width:600px; margin:0 auto; padding:24px 16px 60px; }
+
+/* HEADER */
+.site-header { background:linear-gradient(135deg,var(--orange) 0%,#ff8f00 100%); padding:28px 20px 60px; text-align:center; position:relative; overflow:hidden; }
+.site-header::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.08) 0%,transparent 60%); pointer-events:none; }
+.site-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:40px; background:#fef6ee; border-radius:50% 50% 0 0/100% 100% 0 0; }
+.header-badge { display:inline-block; background:rgba(255,255,255,0.2); color:#fff; font-size:0.65rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; padding:5px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.3); margin-bottom:12px; }
+.site-title { font-family:'Righteous',cursive; font-size:clamp(2.4rem,8vw,4rem); color:#fff; text-shadow:0 4px 20px rgba(0,0,0,0.25); line-height:1; }
+.site-subtitle { color:rgba(255,255,255,0.85); font-size:0.9rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-top:8px; }
+.floating-icons { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; overflow:hidden; }
+.fi { position:absolute; font-size:1.5rem; opacity:0.15; animation:floatRandom 6s ease-in-out infinite; }
+.fi:nth-child(1){top:10%;left:5%;animation-delay:0s;} .fi:nth-child(2){top:20%;right:8%;animation-delay:1s;} .fi:nth-child(3){top:60%;left:3%;animation-delay:2s;} .fi:nth-child(4){top:40%;right:4%;animation-delay:0.5s;} .fi:nth-child(5){top:75%;right:12%;animation-delay:1.5s;}
+@keyframes floatRandom { 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-12px) rotate(10deg);} }
+
+/* MAIN CONTENT */
+.page-wrap { background:#fef6ee; min-height:100vh; padding:0 0 60px; }
+.container { max-width:860px; margin:0 auto; padding:0 16px; }
+
+/* SECTION HEADING */
+.section-heading { text-align:center; padding:40px 0 24px; }
+.section-heading .tag { display:inline-block; background:var(--orange); color:#fff; font-size:0.65rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; padding:4px 14px; border-radius:20px; margin-bottom:10px; }
+.section-heading h2 { font-family:'Righteous',cursive; font-size:clamp(1.6rem,5vw,2.4rem); color:var(--deep); line-height:1.2; }
+.section-heading p { color:var(--muted); font-size:0.9rem; margin-top:6px; font-weight:600; }
+
+/* MENU GRID */
+.menu-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding-bottom:16px; }
+@media(max-width:520px){.menu-grid{grid-template-columns:1fr;}}
+
+/* MENU CARD */
+.menu-card { background:#fff; border-radius:20px; padding:18px 18px 14px; cursor:pointer; border:2px solid #ffe8d6; position:relative; overflow:hidden; transition:transform 0.22s cubic-bezier(.22,1.4,.36,1),box-shadow 0.22s,border-color 0.2s; animation:cardReveal 0.5s cubic-bezier(.22,1.4,.36,1) both; }
+.menu-card:nth-child(1){animation-delay:0.05s;} .menu-card:nth-child(2){animation-delay:0.10s;} .menu-card:nth-child(3){animation-delay:0.15s;} .menu-card:nth-child(4){animation-delay:0.20s;} .menu-card:nth-child(5){animation-delay:0.25s;} .menu-card:nth-child(6){animation-delay:0.30s;} .menu-card:nth-child(7){animation-delay:0.35s;} .menu-card:nth-child(8){animation-delay:0.40s;}
+@keyframes cardReveal { from{opacity:0;transform:translateY(20px) scale(0.95);} to{opacity:1;transform:translateY(0) scale(1);} }
+.menu-card:hover { transform:translateY(-5px) scale(1.02); box-shadow:0 12px 36px rgba(255,87,34,0.18); border-color:var(--orange); }
+.menu-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,87,34,0.05) 0%,transparent 60%); opacity:0; transition:opacity 0.2s; }
+.menu-card:hover::before { opacity:1; }
+.card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
+.card-emoji { font-size:2.2rem; line-height:1; }
+.card-badge { font-size:0.6rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; padding:3px 9px; border-radius:10px; background:#fff3e0; color:var(--orange); }
+.card-name { font-family:'Baloo 2',cursive; font-size:1.05rem; font-weight:800; color:var(--text); line-height:1.2; margin-bottom:6px; }
+.card-price { font-family:'Righteous',cursive; font-size:2rem; font-weight:900; color:var(--orange); line-height:1; letter-spacing:-1px; }
+.card-price sup { font-size:1rem; font-family:'Nunito',sans-serif; font-weight:800; vertical-align:super; }
+.menu-card.expanded { border-color:var(--orange); box-shadow:0 16px 48px rgba(255,87,34,0.25); }
+.card-detail { display:none; margin-top:12px; padding-top:12px; border-top:1.5px dashed #ffe0cc; animation:expandDetail 0.3s ease; }
+@keyframes expandDetail { from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:translateY(0);} }
+.menu-card.expanded .card-detail { display:block; }
+.card-detail-desc { font-size:0.82rem; color:var(--muted); font-weight:600; line-height:1.5; margin-bottom:8px; }
+.card-tags { display:flex; flex-wrap:wrap; gap:5px; }
+.card-tag { font-size:0.65rem; font-weight:800; padding:3px 9px; border-radius:10px; letter-spacing:0.5px; }
+.tag-fresh{background:#e8f8f0;color:#27ae60;} .tag-spicy{background:#fdecea;color:#e74c3c;} .tag-sweet{background:#fef9e7;color:#f39c12;} .tag-cold{background:#eaf4fb;color:#2980b9;} .tag-hot{background:#fdecea;color:#e74c3c;} .tag-veg{background:#e8f8f0;color:#27ae60;} .tag-egg{background:#fef9e7;color:#e67e22;}
+
+/* DIVIDER */
+.wave-divider { text-align:center; padding:8px 0 0; color:var(--muted); font-size:1.2rem; letter-spacing:6px; opacity:0.4; }
+
+/* GAME ENTRY CARDS */
+.games-section { margin-top:50px; }
+.game-entry-card { border-radius:24px; overflow:hidden; margin-bottom:20px; box-shadow:0 4px 24px rgba(0,0,0,0.10); cursor:pointer; transition:transform 0.22s cubic-bezier(.22,1.4,.36,1),box-shadow 0.22s; }
+.game-entry-card:hover { transform:translateY(-5px) scale(1.015); box-shadow:0 16px 48px rgba(0,0,0,0.18); }
+.game-entry-inner { padding:24px 22px 20px; display:flex; align-items:center; gap:16px; }
+.ge-icon { width:64px; height:64px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:2rem; flex-shrink:0; background:rgba(255,255,255,0.2); }
+.ge-text { flex:1; }
+.ge-label { font-size:0.6rem; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; margin-bottom:3px; }
+.ge-title { font-family:'Righteous',cursive; font-size:1.3rem; line-height:1.2; }
+.ge-desc { font-size:0.82rem; font-weight:600; margin-top:4px; opacity:0.8; }
+.ge-arrow { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; background:rgba(255,255,255,0.25); transition:background 0.2s,transform 0.2s; }
+.game-entry-card:hover .ge-arrow { background:rgba(255,255,255,0.4); transform:translateX(4px); }
+.game-entry-free { background:linear-gradient(135deg,#27ae60 0%,#1a6e3b 100%); color:#fff; }
+.game-entry-free .ge-label { color:#a8ffce; }
+.game-entry-paid { background:linear-gradient(135deg,#2980b9 0%,#1a3a5c 100%); color:#fff; }
+.game-entry-paid .ge-label { color:#a8d8ff; }
+
+/* OVERLAY CARD */
+.ov-card { background:#fff; border-radius:22px; padding:22px; box-shadow:0 4px 24px rgba(0,0,0,0.1); margin-bottom:16px; }
+.ov-card-title { font-family:'Righteous',cursive; font-size:1.15rem; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+.ov-card-title .dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+
+/* INSTRUCTIONS */
+.instructions-label { font-size:0.65rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; opacity:0.6; }
+.game-instructions { list-style:none; display:flex; flex-direction:column; gap:8px; }
+.game-instructions li { display:flex; gap:10px; align-items:flex-start; font-size:0.88rem; font-weight:600; color:#3d2400; line-height:1.5; }
+.li-bullet { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:900; color:#fff; flex-shrink:0; margin-top:1px; }
+
+/* LEVEL CARDS */
+.level-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+@media(max-width:400px){.level-cards{grid-template-columns:1fr;}}
+.level-card { border-radius:16px; padding:18px 14px; text-align:center; border:2px solid transparent; transition:transform 0.18s,box-shadow 0.18s; }
+.level-card.easy { background:#eaf4fb; border-color:#b2d9f5; }
+.level-card.legendary { background:#f3e8fd; border-color:#c8a0e8; }
+.level-icon { font-size:2.2rem; margin-bottom:8px; }
+.level-name { font-family:'Righteous',cursive; font-size:1.05rem; margin-bottom:4px; }
+.level-card.easy .level-name { color:#1a5276; }
+.level-card.legendary .level-name { color:#6a0dad; }
+.level-duration { font-size:0.85rem; font-weight:800; margin-bottom:8px; }
+.level-card.easy .level-duration { color:#2980b9; }
+.level-card.legendary .level-duration { color:#8e44ad; }
+.level-prize { font-size:0.75rem; font-weight:700; padding:5px 10px; border-radius:20px; display:inline-block; line-height:1.4; }
+.level-card.easy .level-prize { background:#27ae60; color:#fff; }
+.level-card.legendary .level-prize { background:#8e44ad; color:#fff; }
+
+/* WARNING */
+.warn-box { background:#fff8e1; border:2px solid #ffe082; border-radius:14px; padding:12px 16px; margin-top:12px; font-size:0.83rem; font-weight:700; color:#7c5700; line-height:1.5; }
+
+/* TIMER */
+.timer-widget { margin-top:6px; background:linear-gradient(135deg,#1a6e3b,#27ae60); border-radius:20px; padding:28px 20px; text-align:center; color:#fff; }
+.timer-label { font-size:0.7rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; opacity:0.8; margin-bottom:4px; }
+.timer-display { font-family:'Righteous',cursive; font-size:5rem; letter-spacing:3px; line-height:1; margin:8px 0 12px; text-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.timer-display.success { color:var(--amber); animation:winner 0.4s ease 3; }
+.timer-display.fail { color:#ff6b6b; }
+@keyframes winner { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+.timer-msg { font-size:0.92rem; font-weight:700; min-height:1.4em; margin-bottom:20px; opacity:0.95; line-height:1.5; }
+.timer-btn { font-family:'Nunito',sans-serif; font-weight:900; border-radius:20px; border:none; cursor:pointer; transition:transform 0.15s,box-shadow 0.15s; letter-spacing:0.5px; width:100%; display:block; }
+.timer-btn:active { transform:scale(0.97); }
+.btn-start { font-size:1.2rem; padding:18px 28px; background:#fff; color:#1a6e3b; box-shadow:0 4px 14px rgba(0,0,0,0.2); border-radius:14px; }
+.btn-stop { font-size:2rem; padding:36px 28px; background:var(--amber); color:#1a0a00; box-shadow:0 4px 24px rgba(255,193,7,0.5); border-radius:20px; animation:glowPulse 0.9s ease-in-out infinite; }
+@keyframes glowPulse { 0%,100%{box-shadow:0 4px 24px rgba(255,193,7,0.4);} 50%{box-shadow:0 8px 48px rgba(255,193,7,0.9),0 0 0 10px rgba(255,193,7,0.12);} }
+
+/* TOKEN BUTTON */
+.token-btn-wrap { margin-top:16px; }
+.token-btn { font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800; padding:15px 36px; border-radius:50px; border:none; cursor:pointer; background:linear-gradient(135deg,#2980b9,#1a5276); color:#fff; box-shadow:0 4px 20px rgba(41,128,185,0.4); transition:transform 0.15s,box-shadow 0.15s; width:100%; }
+.token-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(41,128,185,0.5); }
+.token-msg { display:none; margin-top:12px; background:#dbeeff; border-radius:12px; padding:14px 16px; font-size:0.88rem; font-weight:700; color:#1a5276; text-align:center; animation:slideUp 0.3s ease; }
+
+/* FOOTER */
+.site-footer { background:linear-gradient(135deg,#1a0a00 0%,#3d1c00 100%); padding:36px 20px 28px; text-align:center; position:relative; overflow:hidden; }
+.site-footer::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--orange),var(--amber),var(--orange)); }
+.footer-emoji-row { font-size:1.6rem; letter-spacing:8px; margin-bottom:10px; }
+.footer-title { font-family:'Righteous',cursive; font-size:1.4rem; color:#fff; margin-bottom:4px; }
+.footer-sub { font-size:0.75rem; color:rgba(255,255,255,0.5); letter-spacing:2px; text-transform:uppercase; font-weight:700; }
+.footer-hearts { margin-top:16px; font-size:0.85rem; color:var(--amber); font-weight:700; }
+
+/* SCROLL REVEAL */
+.reveal { opacity:0; transform:translateY(30px); transition:opacity 0.6s ease,transform 0.6s cubic-bezier(.22,1.4,.36,1); }
+.reveal.visible { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome-screen">
+  <div class="welcome-emoji">🍽️</div>
+  <div class="welcome-title">Eat &amp; Repeat</div>
+  <div class="welcome-sub">Today's Special is Here!</div>
+  <div class="welcome-tagline">🌟 Fresh Food · Fun Games · Good Vibes 🌟</div>
+  <div class="welcome-dots">
+    <div class="welcome-dot"></div><div class="welcome-dot"></div><div class="welcome-dot"></div>
+  </div>
+</div>
+
+<!-- FREE GAME OVERLAY -->
+<div id="free-game-overlay" class="game-overlay">
+  <div class="overlay-inner">
+    <div class="overlay-header">
+      <button class="overlay-back" onclick="closeOverlay('free-game-overlay')">← Back to Menu</button>
+      <div class="overlay-title">⏱️ Stop &amp; Watch</div>
+      <div class="overlay-sub">Free Game • Win a Cool Drink 🥤</div>
+    </div>
+    <div class="overlay-content">
+      <div class="ov-card">
+        <div class="ov-card-title" style="color:#1a6e3b;"><div class="dot" style="background:#27ae60;"></div>How to Play</div>
+        <div class="instructions-label" style="color:#27ae60;">📋 Rules</div>
+        <ul class="game-instructions">
+          <li><div class="li-bullet" style="background:#27ae60;">1</div><span>Close your eyes — <strong>no peeking!</strong> You cannot look at the screen once the timer starts.</span></li>
+          <li><div class="li-bullet" style="background:#27ae60;">2</div><span>Press the big <strong>START</strong> button to begin the timer from 0.00 seconds.</span></li>
+          <li><div class="li-bullet" style="background:#27ae60;">3</div><span>Using only your gut feeling, press the big <strong>STOP</strong> button when you feel it's exactly <strong>10.00 seconds</strong>.</span></li>
+          <li><div class="li-bullet" style="background:#27ae60;">4</div><span>Stop exactly at <strong>10.00s</strong> → you WIN a <strong>free cool drink!</strong> 🎉</span></li>
+          <li><div class="li-bullet" style="background:#27ae60;">5</div><span>No cheating — keep those eyes shut! It's all about your inner clock 🍀</span></li>
+        </ul>
+      </div>
+      <div class="timer-widget">
+        <div class="timer-label">Your Timer</div>
+        <div class="timer-display" id="timerDisplay">00.00</div>
+        <div class="timer-msg" id="timerMsg">Press START then close your eyes! 👀</div>
+        <button class="timer-btn btn-start" id="timerBtn" onclick="handleTimer()">▶ START</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAID GAME OVERLAY -->
+<div id="paid-game-overlay" class="game-overlay">
+  <div class="overlay-inner">
+    <div class="overlay-header">
+      <button class="overlay-back" onclick="closeOverlay('paid-game-overlay')">← Back to Menu</button>
+      <div class="overlay-title">💪 Iron Hold Challenge</div>
+      <div class="overlay-sub">Paid Game • Entry ₹10 • Win Prizes!</div>
+    </div>
+    <div class="overlay-content">
+      <div class="ov-card">
+        <div class="ov-card-title" style="color:#1a5276;"><div class="dot" style="background:#2980b9;"></div>How to Play</div>
+        <div class="instructions-label" style="color:#2980b9;">📋 Rules</div>
+        <ul class="game-instructions">
+          <li><div class="li-bullet" style="background:#2980b9;">1</div><span>Pay <strong>₹10 entry fee</strong> and collect your challenge token from us.</span></li>
+          <li><div class="li-bullet" style="background:#2980b9;">2</div><span>Hold a small weight or stick by extending your arm <strong>straight out</strong> — no bending, no resting.</span></li>
+          <li><div class="li-bullet" style="background:#2980b9;">3</div><span>Choose <strong>one level only</strong> — Easy or Legendary. You can only attempt one and win one prize.</span></li>
+          <li><div class="li-bullet" style="background:#2980b9;">4</div><span>Hold it completely steady for the full duration without dropping or moving your arm.</span></li>
+          <li><div class="li-bullet" style="background:#2980b9;">5</div><span>⚠️ If you pass Easy but try Legendary and <strong>fail</strong>, you walk away with <strong>nothing</strong>. Choose wisely!</span></li>
+        </ul>
+      </div>
+
+      <div class="ov-card">
+        <div class="ov-card-title" style="color:#1a5276;"><div class="dot" style="background:#2980b9;"></div>Choose Your Level</div>
+        <div class="level-cards">
+          <div class="level-card easy">
+            <div class="level-icon">😤</div>
+            <div class="level-name">Easy</div>
+            <div class="level-duration">Hold for 3 mins</div>
+            <div class="level-prize">🥤 Free Cool Drink<br><small>(worth ₹15)</small></div>
+          </div>
+          <div class="level-card legendary">
+            <div class="level-icon">🏆</div>
+            <div class="level-name">Legendary</div>
+            <div class="level-duration">Hold for 5 mins</div>
+            <div class="level-prize">🥚 Free Egg Masala<br><small>(worth ₹20)</small></div>
+          </div>
+        </div>
+        <div class="warn-box">⚠️ <strong>Important:</strong> Pick ONE level. If you pass Easy and attempt Legendary but fail — you get nothing. Decide before you start!</div>
+      </div>
+
+      <div class="token-btn-wrap">
+        <button class="token-btn" onclick="buyToken()">🎫 Buy Token – ₹10</button>
+        <div class="token-msg" id="tokenMsg">🎉 Token noted! Come to our counter, pay ₹10, and get your challenge token. Ready to hold? 💪</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN PAGE -->
+<div id="main-page">
+  <header class="site-header">
+    <div class="floating-icons">
+      <div class="fi">🍈</div><div class="fi">🥚</div><div class="fi">🌶️</div><div class="fi">🥤</div><div class="fi">🥪</div>
+    </div>
+    <div class="header-badge">🌟 Hostel's Finest 🌟</div>
+    <div class="site-title">Eat &amp; Repeat</div>
+    <div class="site-subtitle">Today's Special Menu</div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="container">
+
+      <div class="section-heading reveal">
+        <div class="tag">🍴 Fresh Today</div>
+        <h2>Today's Special Menu</h2>
+        <p>Tap any item to discover what makes it special!</p>
+      </div>
+
+      <div class="menu-grid reveal">
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🍈</div><div class="card-badge">Refreshing</div></div>
+          <div class="card-name">Melon Splash</div><div class="card-price"><sup>₹</sup>15</div>
+          <div class="card-detail"><div class="card-detail-desc">Chilled, juicy melon served as a refreshing drink — perfect for beating the heat on a hot hostel day!</div><div class="card-tags"><span class="card-tag tag-cold">❄️ Cold</span><span class="card-tag tag-sweet">🍬 Sweet</span><span class="card-tag tag-veg">🌿 Veg</span></div></div>
+        </div>
+
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🥜</div><div class="card-badge">Crunchy</div></div>
+          <div class="card-name">Golden Groundnuts</div><div class="card-price"><sup>₹</sup>25</div>
+          <div class="card-detail"><div class="card-detail-desc">Roasted to golden perfection with a hint of salt and spice. The ultimate munch snack while hanging out!</div><div class="card-tags"><span class="card-tag tag-spicy">🌶️ Spiced</span><span class="card-tag tag-veg">🌿 Veg</span></div></div>
+        </div>
+
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🍡</div><div class="card-badge">Juicy Bites</div></div>
+          <div class="card-name">Melon Bites</div><div class="card-price"><sup>₹</sup>15</div>
+          <div class="card-detail"><div class="card-detail-desc">Fresh melon cut into perfectly sized bites — sweet, hydrating, and a great light snack between meals!</div><div class="card-tags"><span class="card-tag tag-fresh">🌱 Fresh</span><span class="card-tag tag-sweet">🍬 Sweet</span><span class="card-tag tag-veg">🌿 Veg</span></div></div>
+        </div>
+
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🥤</div><div class="card-badge">Love Potion</div></div>
+          <div class="card-name">Mohabbat Ka Sharbat</div><div class="card-price"><sup>₹</sup>39</div>
+          <div class="card-detail"><div class="card-detail-desc">A legendary Delhi-style chilled drink with milk, rose syrup, basil seeds and crushed ice. Pure desi love!</div><div class="card-tags"><span class="card-tag tag-cold">❄️ Cold</span><span class="card-tag tag-sweet">🌹 Rosy</span><span class="card-tag tag-veg">🌿 Veg</span></div></div>
+        </div>
+
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🌶️</div><div class="card-badge">Street Style</div></div>
+          <div class="card-name">Chips Chaat</div><div class="card-price"><sup>₹</sup>25</div>
+          <div class="card-detail"><div class="card-detail-desc">Crispy chips tossed with chaat masala, lemon and green chilli. An explosion of tangy, spicy street flavours!</div><div class="card-tags"><span class="card-tag tag-spicy">🌶️ Spicy</span><span class="card-tag tag-veg">🌿 Veg</span></div></div>
+        </div>
+
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🍳</div><div class="card-badge">Hot Fill</div></div>
+          <div class="card-name">Egg Toast Sandwich</div><div class="card-price"><sup>₹</sup>20</div>
+          <div class="card-detail"><div class="card-detail-desc">Toasted bread with spicy egg filling, veggies and sauce — the ultimate hunger buster for hostel life!</div><div class="card-tags"><span class="card-tag tag-hot">🔥 Hot</span><span class="card-tag tag-egg">🥚 Egg</span></div></div>
+        </div>
+
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🧃</div><div class="card-badge">Chill Sip</div></div>
+          <div class="card-name">Mazza</div><div class="card-price"><sup>₹</sup>10</div>
+          <div class="card-detail"><div class="card-detail-desc">The iconic mango drink everyone loves. Ice-cold Maaza to cool you down in an instant. Simple. Classic. ₹10!</div><div class="card-tags"><span class="card-tag tag-cold">❄️ Cold</span><span class="card-tag tag-sweet">🥭 Mango</span><span class="card-tag tag-veg">🌿 Veg</span></div></div>
+        </div>
+
+        <div class="menu-card" onclick="toggleCard(this)">
+          <div class="card-top"><div class="card-emoji">🥚</div><div class="card-badge">Spicy Good</div></div>
+          <div class="card-name">Egg Masala</div><div class="card-price"><sup>₹</sup>20</div>
+          <div class="card-detail"><div class="card-detail-desc">Boiled eggs in a rich spiced masala gravy. Desi comfort food at its absolute finest!</div><div class="card-tags"><span class="card-tag tag-hot">🔥 Hot</span><span class="card-tag tag-spicy">🌶️ Spicy</span><span class="card-tag tag-egg">🥚 Egg</span></div></div>
+        </div>
+      </div>
+
+      <div class="wave-divider">✦ ✦ ✦ ✦ ✦</div>
+
+      <!-- GAMES SECTION -->
+      <div class="games-section">
+        <div class="section-heading reveal">
+          <div class="tag" style="background:#27ae60;">🎮 Play &amp; Win</div>
+          <h2>Games &amp; Win Prizes!</h2>
+          <p>Tap a game card to open and start playing 👇</p>
+        </div>
+
+        <div class="game-entry-card game-entry-free reveal" onclick="openOverlay('free-game-overlay')">
+          <div class="game-entry-inner">
+            <div class="ge-icon">⏱️</div>
+            <div class="ge-text">
+              <div class="ge-label">Free to Play</div>
+              <div class="ge-title">Stop &amp; Watch</div>
+              <div class="ge-desc">Stop the timer at exactly 10.00s → Win a free cool drink! 🥤</div>
+            </div>
+            <div class="ge-arrow">→</div>
+          </div>
+        </div>
+
+        <div class="game-entry-card game-entry-paid reveal" onclick="openOverlay('paid-game-overlay')">
+          <div class="game-entry-inner">
+            <div class="ge-icon">💪</div>
+            <div class="ge-text">
+              <div class="ge-label">₹10 Entry Fee</div>
+              <div class="ge-title">Iron Hold Challenge</div>
+              <div class="ge-desc">Hold a weight for 3–5 mins → Win drink or egg masala! 🏆</div>
+            </div>
+            <div class="ge-arrow">→</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-emoji-row">🎓 🍽️ 🎮</div>
+    <div class="footer-title">Presented by Hostel Pasanga!</div>
+    <div class="footer-sub">Made with hustle, hunger &amp; heart</div>
+    <div class="footer-hearts">❤️ Eat. Play. Repeat. ❤️</div>
+  </footer>
+</div>
+
+<script>
+function openOverlay(id) {
+  document.getElementById(id).classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('active');
+  document.body.style.overflow = '';
+  // Reset timer when leaving
+  if (id === 'free-game-overlay') resetTimer();
+}
+
+// TIMER
+let timerInterval = null, timerRunning = false, timerMs = 0;
+function handleTimer() { timerRunning ? stopTimer() : startTimer(); }
+function startTimer() {
+  timerRunning = true; timerMs = 0;
+  const btn = document.getElementById('timerBtn');
+  const display = document.getElementById('timerDisplay');
+  const msg = document.getElementById('timerMsg');
+  btn.textContent = '⏹ STOP!';
+  btn.className = 'timer-btn btn-stop';
+  display.className = 'timer-display';
+  display.textContent = '00.00';
+  msg.textContent = '😤 Eyes closed! Feel the rhythm...';
+  timerInterval = setInterval(() => {
+    timerMs += 10;
+    const s = Math.floor(timerMs/1000), cs = Math.floor((timerMs%1000)/10);
+    display.textContent = String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0');
+  }, 10);
+}
+function stopTimer() {
+  clearInterval(timerInterval); timerRunning = false;
+  const btn = document.getElementById('timerBtn');
+  const display = document.getElementById('timerDisplay');
+  const msg = document.getElementById('timerMsg');
+  btn.textContent = '▶ TRY AGAIN'; btn.className = 'timer-btn btn-start';
+  const totalCs = Math.floor(timerMs/10), target = 1000;
+  const s = Math.floor(timerMs/1000), cs = Math.floor((timerMs%1000)/10);
+  if (totalCs === target) { display.className = 'timer-display success'; msg.textContent = '🎉 PERFECT 10.00s! YOU WIN A FREE COOL DRINK! 🥤🏆 Show this screen!'; }
+  else if (Math.abs(totalCs-target) <= 5) { display.className = 'timer-display'; msg.textContent = '😲 SO close! Within 0.05s! Try again!'; }
+  else if (Math.abs(totalCs-target) <= 20) { display.className = 'timer-display'; msg.textContent = '👀 Almost! You can feel it — try once more!'; }
+  else if (totalCs < target) { display.className = 'timer-display fail'; msg.textContent = `⏩ Too fast! Stopped at ${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}s. Keep going next time!`; }
+  else { display.className = 'timer-display fail'; msg.textContent = `⏰ Too slow! Stopped at ${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}s. Trust your gut!`; }
+}
+function resetTimer() {
+  clearInterval(timerInterval); timerRunning = false; timerMs = 0;
+  const btn = document.getElementById('timerBtn');
+  if (btn) { btn.textContent = '▶ START'; btn.className = 'timer-btn btn-start'; }
+  const display = document.getElementById('timerDisplay');
+  if (display) { display.className = 'timer-display'; display.textContent = '00.00'; }
+  const msg = document.getElementById('timerMsg');
+  if (msg) msg.textContent = 'Press START then close your eyes! 👀';
+}
+
+function buyToken() { document.getElementById('tokenMsg').style.display = 'block'; }
+
+function toggleCard(el) {
+  const was = el.classList.contains('expanded');
+  document.querySelectorAll('.menu-card').forEach(c => c.classList.remove('expanded'));
+  if (!was) el.classList.add('expanded');
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
